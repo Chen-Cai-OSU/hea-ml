@@ -1,0 +1,10 @@
+POT
+skorch
+matplotlib
+torch
+torchvision
+PyYAML
+pymatgen
+pandas
+termcolor
+colorama
