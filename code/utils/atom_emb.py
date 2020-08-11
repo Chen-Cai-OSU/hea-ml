@@ -1,35 +1,31 @@
 # Created at 2020-08-10
 # Summary:
 import json
-import os.path as osp
-from pprint import pprint
 
-import matplotlib.pyplot as plt
 import numpy as np
-from code.utils.dir import sig_dir, signor_dir
-from code.utils.np import np2set, index_of_firstx, one_hot
+import os.path as osp
+from code.utils.np import np2set, index_of_firstx
 from code.utils.probe import summary
-
 
 
 class atom_emb():
     def __init__(self):
+        self.dir = osp.join(osp.dirname(osp.realpath(__file__)), '..', '')
         self.cutpt_dict = {0: -1, 1: 18, 2: 25, 3: 35, 4: 45, 5: 57, 6: 67, 7: 77, 8: 81, 9: 91}
         self.n_feat = 9
         self.load_emb()
         self.sub_atom_emb()
 
     def load_(self):
-        dir = f'{sig_dir()}graph/cgcnn/data_/sample-regression/'
-        elem_embedding_file = f'{dir}atom_init.json'
+
+        elem_embedding_file = f'{self.dir}atom_init.json'
         with open(elem_embedding_file) as f:
             elem_embedding = json.load(f)
         return elem_embedding
 
     def load_emb(self):
         """ load atom emb array of shape (100, 92)"""
-        dir = f'{sig_dir()}graph/cgcnn/data_/sample-regression/'
-        elem_embedding_file = f'{dir}atom_init.json'
+        elem_embedding_file = f'{self.dir}atom_init.json'
         with open(elem_embedding_file) as f:
             elem_embedding = json.load(f)
 

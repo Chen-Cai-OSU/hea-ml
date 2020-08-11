@@ -29,16 +29,6 @@ def assert_file_exist(f):
     assert os.path.isfile(f), f'File {f} does not exist'
 
 
-def log_dir():
-    return f'{sig_dir()}../data/log'
-
-
-def tb_dir():
-    dir = f'{home()}/Documents/DeepLearning/Signor/data/tensorboard/'
-    make_dir(dir)
-    return dir
-
-
 def make_dir(dir):
     # has side effect
 
@@ -72,35 +62,10 @@ def home_dir():
     return home
 
 
-def denali_dir():
-    return os.path.join(sig_dir(), 'viz', 'denali', 'hea', '')
-
-
-def hea_emb_dir():
-    return os.path.join(sig_dir(), '..', 'data', 'hea_emb', '')
-
-
-def sig_dir():
-    if detect_sys() == 'Linux':
-        return '/home/cai.507/Documents/DeepLearning/Signor/signor/'
-    elif detect_sys() == 'Darwin':
-        return '/Users/admin/Documents/osu/Research/Signor/signor/'
-    else:
-        NotImplementedError
-
-
-def signor_dir():
-    return f'{home()}/Documents/DeepLearning/Signor/signor/'
-
-
 def get_dir(f):
     import os
     f = f'{home()}/Documents/DeepLearning/Signor/signor/graph/cgcnn/code/run_finetune.py'
     os.path.dirname(f)
-
-
-def curdir():
-    return osp.dirname(osp.realpath(__file__))
 
 
 def find_files(dir='./', suffix='.txt', verbose=False, include_dir=False):

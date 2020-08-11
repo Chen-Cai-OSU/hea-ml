@@ -10,7 +10,6 @@ import torch.nn as nn
 import yaml
 
 from code.utils.format import banner, red
-from code.utils.dir import sig_dir
 from code.utils.probe import summary
 
 random.seed(42)
@@ -160,9 +159,12 @@ def load_configs(f):
 
     return cfg_dic
 
+import os.path as osp
+def curdir():
+    return osp.dirname(osp.realpath(__file__))
 
 def load_deepset_yaml(id=0):
-    f = f'{sig_dir()}ml/classic/configs/deepset.yaml'
+    f = osp.join(curdir(), '..', 'deepset.yaml')
     cfg_dic = load_configs(f)
 
     cfg_dic['extractor_nl'] = [nn.Identity]  # [nn.ReLU, nn.ELU, nn.Identity] #

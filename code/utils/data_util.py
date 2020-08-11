@@ -17,7 +17,7 @@ from code.utils.list import sublist
 from code.utils.probe import summary
 from tqdm import tqdm
 
-from code.utils.dir import all_dirs, assert_file_exist, sig_dir
+from code.utils.dir import all_dirs, assert_file_exist
 
 
 class data_util():
@@ -317,81 +317,12 @@ def get_compositions(hea):
         return re.findall('[A-Z][^A-Z]*', hea)
 
 if __name__ == '__main__':
-    # summary(data_util().read_prop('CrNbCuFe'))
-
     args = parser.parse_args()
     bm = args.bm
     D = data_util(bm=bm, dir = '/home/cai.507/Dropbox/Wei_Data/HEA_System/4_ele_fully_random_result')
-    # D = data_util(bm=bm, dir='/home/cai.507/Dropbox/Wei_Data/HEA_System/Processed')
     df = D.props(verbose=False, bm=bm)
     print(df.head(n = 100))
 
     df = df.sort_values(by=['bulk'])
     print(df.head(20))
     summary(df)
-    exit()
-
-    df = df.astype({'energy': 'float', 'bulk': 'float', 'equil_volume': 'float', 'lattice_constant': 'float'})
-    # df['bulk'] = np.log10(df['bulk'])
-    # df['energy'] = np.log10(abs(df['energy']))
-
-    import matplotlib.pyplot as plt
-
-    # fig, ax = plt.subplots(2, 2, figsize=(9, 9))
-    # df.plot.scatter(x="equil_volume", y="cell", ax=ax[0, 0])
-    # df.plot.scatter(x="lattice_constant", y="cell", ax=ax[0, 1])
-    # df.plot.scatter(x="equil_volume", y="energy", ax=ax[1, 0])
-    # df.plot.scatter(x="equil_volume", y="lattice_constant", ax=ax[1, 1])
-
-    fig, ax2 = plt.subplots(1, 4, figsize=(8, 2))
-    print(ax2)
-    # plt.locator_params(nbins=3)
-
-    fig.tight_layout(pad=0)
-    kw = {'bins':20, 'kind':"hist", 'grid': False, 'sharex': False, 'sharey': True, 'legend':False}
-    df[['bulk']].plot(**kw, ax=ax2[0])
-    df[['energy']].plot(**kw, ax=ax2[1])
-    df[['equil_volume']].plot(**kw, ax=ax2[2])
-    df[['lattice_constant']].plot(**kw, ax=ax2[3])
-    img_dir = os.path.join(sig_dir(), 'graph', 'hea', 'paper', 'figure', '')
-    fname = os.path.join(img_dir, f'hist.pdf')
-    plt.savefig(fname, bbox_inches='tight')
-    # df[['bulk', 'energy', 'equil_volume', 'lattice_constant']].plot(bins=30, kind="hist",
-    #                                                                 subplots=True, grid=False, ax=(2,2), sharex=False, sharey=False)
-    plt.show()
-
-    sys.exit()
-
-    arg = parser.parse_args()
-    print(arg)
-
-    D = data_util()
-    D.get_lattice_constant('CrNbCuFe')
-    # summary(D.df, 'D.df')
-    exit()
-
-    D.set_neural_emb()
-    summary(D.element_emb)
-    # dir = os.path.join(signor_dir(), 'graph', 'cgcnn', 'data_', 'sample-regression', '')
-    # /home/cai.507/Dropbox/2020_Spring/Network/proj/data/TianXie/cif/mp-ids-3402/elasticity.K_VRH
-    dir = os.path.join(xt_cif_dir(), 'mp-ids-46744', arg.prop, '')
-    x, y = cif(dir).get_xy(emb='one_hot')
-
-    summary(x, 'x')
-    summary(y, 'y')
-    hist(y, show=False, title=arg.prop)
-    # exit()
-
-    # x, y = dim_reducer().sampler((x, y), s=10000)
-    # a baseline
-    classifer = clf(x, y, split=[0.8, 0.2], norm_x=True, norm_y=True, regression=True)
-    metrics = []
-    for i in range(1):
-        classifer.train_val_test(rs=i)
-        for m in ['mlp']: # ['rf', 'gbt']: # ['svm', 'linear_reg', 'mlp']:
-            getattr(classifer, m)()
-            classifer.eval()  #
-    exit()
-
-    element_emb = atom_emb().load_()
-

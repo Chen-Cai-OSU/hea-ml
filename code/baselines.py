@@ -5,14 +5,6 @@ from functools import partial
 
 import numpy as np
 import torch
-from code.pt.mlp import MLP
-from code.utils.dict import update_dict
-from code.utils.format import timestamp, pf, banner, red
-from code.utils.probe import summary
-from code.utils.normalizer import Normalizer
-from code.utils.np import tonp, totsr
-from code.pt.deepset import DeepSet
-from code.pt.random_ import fix_seed
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingRegressor, \
     GradientBoostingClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -23,9 +15,22 @@ from sklearn.preprocessing import normalize
 from sklearn.svm import SVC, SVR
 from skorch import NeuralNetRegressor
 
+from code.pt.deepset import DeepSet
+from code.pt.mlp import MLP
+from code.pt.random_ import fix_seed
+from code.utils.dict import update_dict
+from code.utils.format import timestamp, pf, banner, red
+from code.utils.normalizer import Normalizer
+from code.utils.np import tonp, totsr
+from code.utils.probe import summary
+
+
 def warn(*args, **kwargs):
     pass
+
+
 import warnings
+
 warnings.warn = warn
 
 
@@ -56,9 +61,10 @@ class clf():
         fix_seed()
         assert isinstance(x, (np.ndarray, torch.Tensor))
         assert isinstance(y, (np.ndarray, torch.Tensor))
-        if label!=None:
+        if label != None:
             assert isinstance(label, list)
-            assert x.shape[0] == y.shape[0]==len(label), f'x is of shape {x.shape}. y is of shpae {y.shape}. Label is of len {len(label)}'
+            assert x.shape[0] == y.shape[0] == len(
+                label), f'x is of shape {x.shape}. y is of shpae {y.shape}. Label is of len {len(label)}'
         else:
             assert x.shape[0] == y.shape[0], f'x is of shape {x.shape}. y is of shpae {y.shape}.'
 
@@ -142,7 +148,8 @@ class clf():
         else:
             self.clf = MLPClassifier(**kwargs, random_state=42)
         # best_param = self.seach_hyper()
-        best_param =  {'max_iter': 300, 'hidden_layer_sizes': [100, 100, 50], 'batch_size': 32, 'activation': 'relu', 'random_state': 42}
+        best_param = {'max_iter': 300, 'hidden_layer_sizes': [100, 100, 50], 'batch_size': 32, 'activation': 'relu',
+                      'random_state': 42}
         print(red(best_param))
         self.clf = MLPRegressor(**best_param) if self.regression else MLPClassifier(**best_param)
 
@@ -152,7 +159,7 @@ class clf():
         :param model_kw:
         :return:
         """
-        self.clf_name ='deepset'
+        self.clf_name = 'deepset'
         assert np.ndim(self.x_train) == 3, 'Deepset expects np.array of ndim 3.'
 
         default_kw_opt = {'verbose': 0, 'device': 'cpu',
@@ -162,8 +169,8 @@ class clf():
                           'optimizer__weight_decay': 0.0001,
                           'criterion': torch.nn.MSELoss,
                           'iterator_train__shuffle': True,
-                           # optimizer__momentum=0.9,
-                          'optimizer':torch.optim.Adam,} # self.seach_hyper()
+                          # optimizer__momentum=0.9,
+                          'optimizer': torch.optim.Adam, }  # self.seach_hyper()
 
         kw_opt = update_dict(kw_opt, default_kw_opt)
         print(red(kw_opt))
@@ -176,7 +183,7 @@ class clf():
 
     def mlp_skorch(self, kw_opt={}, **model_kw):
         self.clf_name = 'mlp_skorch'
-        _mlp = partial(MLP, **model_kw) # dummy hidden num
+        _mlp = partial(MLP, **model_kw)  # dummy hidden num
 
         # important: still not good enough.
         default_kw_opt = {'verbose': 0,
@@ -245,7 +252,8 @@ class clf():
         else:
             self.clf = GradientBoostingClassifier()
         best_param = self.seach_hyper()
-        self.clf = GradientBoostingRegressor(**best_param) if self.regression else GradientBoostingClassifier(**best_param)
+        self.clf = GradientBoostingRegressor(**best_param) if self.regression else GradientBoostingClassifier(
+            **best_param)
 
     def svm(self, C=1000, gamma=1):
         self.clf_name = 'svm'
@@ -258,7 +266,6 @@ class clf():
         assert self.norm_x == True, f'Strongly encourage to norm x, otherwise svm will be very slow.'
         best_param = self.seach_hyper()
         self.clf = SVR(**best_param) if self.regression else SVC(**best_param)
-
 
     ################## hyperparameter search ###################
 
@@ -280,14 +287,13 @@ class clf():
         y = np.concatenate((self.y_train, self.y_val), axis=0) if self.y_val is not None else self.y_train
 
         if self.regression:
-            y = tonp(self.normalizer.norm(y)) # important. added this one. will this change the mlp? no.
-            reg_kwargs = {'scoring':'neg_mean_absolute_error'} #  neg_mean_squared_error
-            # reg_kwargs = {'scoring': 'neg_mean_squared_error'}  #
-            kwargs = reg_kwargs # update_dict(reg_kwargs, kwargs)
+            y = tonp(self.normalizer.norm(y))  # important. added this one. will this change the mlp? no.
+            reg_kwargs = {'scoring': 'neg_mean_absolute_error'}  # neg_mean_squared_error
+            kwargs = reg_kwargs  # update_dict(reg_kwargs, kwargs)
         else:
-            clf_kwargs = {'scoring':'accuracy'}
-            kwargs = clf_kwargs # update_dict(clf_kwargs, kwargs)
-        # kwargs['n_iter'] = 100
+            clf_kwargs = {'scoring': 'accuracy'}
+            kwargs = clf_kwargs  # update_dict(clf_kwargs, kwargs)
+
         best_param = hyperparameter_seach(self.clf, x, y, param_dist=hyper_dic, model=self.clf_name, **kwargs)
         return best_param
 
@@ -302,7 +308,6 @@ class clf():
 
     ################## evaluation ###################
 
-
     def eval(self, verbose=True, tsr=False, **kwargs):
         """
         :param verbose:
@@ -312,7 +317,7 @@ class clf():
         :param x_test: replace replacing self.x_test with other data.
         :return:
         """
-        if 'x_test' in kwargs: # replacing self.x_test with other data.
+        if 'x_test' in kwargs:  # replacing self.x_test with other data.
             summary(self.x_test, 'original x_test')
             summary(kwargs['x_test'], 'new x_test')
             self.x_test = kwargs['x_test']
@@ -331,7 +336,7 @@ class clf():
                 self.clf.fit(self.x_train, target_normed)
                 y_pred_test = self.clf.predict(self.x_test)
             else:
-                target_normed = self.normalizer.norm(self.y_train) # torch.tensor
+                target_normed = self.normalizer.norm(self.y_train)  # torch.tensor
                 target_normed = target_normed.view(self.y_train.size())
                 self.clf.fit(totsr(self.x_train), totsr(target_normed))
                 y_pred_test = self.clf.predict(totsr(self.x_test))
@@ -342,7 +347,7 @@ class clf():
             if 'x_test' in kwargs:
                 return y_pred_test
 
-        else: # todo: handle torch tensor
+        else:  # todo: handle torch tensor
             self.fit(self.x_train, self.y_train)
             y_pred_test = self.clf.predict(self.x_test)
 
@@ -355,9 +360,8 @@ class clf():
             summary(self.y_test, 'self.y_test', highlight=True)
             summary(abs(y_pred_test - self.y_test), 'diff', highlight=True)
 
-
             metric = np.sum(abs(y_pred_test - self.y_test)) / self.y_test.shape[0]
-            relative_MAE = np.multiply(abs(y_pred_test - self.y_test), 1.0 /self.y_test)
+            relative_MAE = np.multiply(abs(y_pred_test - self.y_test), 1.0 / self.y_test)
             relative_MAE = np.mean(relative_MAE)
             print(f'relative mae (percent): {pf(relative_MAE * 100, 3)}')
             metric_name = 'MAE'
@@ -384,8 +388,6 @@ class clf():
         pass
 
 
-
-
 if __name__ == '__main__':
 
     # deepset
@@ -399,23 +401,3 @@ if __name__ == '__main__':
         classifer.train_val_test()
         getattr(classifer, method)()
         classifer.eval(tsr=True)
-    exit()
-
-    # test regression
-    x, y = np.random.random((1000, 30)), np.random.random((1000, 1))
-    # train, val, test = load_mnist(data_dir='/home/cai.507/Documents/DeepLearning/Signor/data/')
-    # x, y = sampler(train, s=1000, verbose=True)
-    x = x.astype(np.double)  # need this.
-    y = y.astype(np.double)
-    x, y = totsr(x), totsr(y)
-
-    for method in ['mlp_skorch']: # ['knn', 'svm', 'rf', 'gbt']:
-        classifer = clf(x, y, split=[0.8, 0.2], norm_x=True, norm_y=True, regression=True)
-        classifer.train_val_test()
-
-        clf_args = {'task':'reg', 'input_dim': 30, 'out_dim': 1}
-        getattr(classifer, method)(**clf_args)
-        classifer.eval(tsr=True)
-
-    exit()
-
